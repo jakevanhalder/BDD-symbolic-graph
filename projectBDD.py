@@ -5,7 +5,7 @@ This program verifies StatementA:
     in a positive even number of steps.
 """
 from pyeda.inter import exprvars, expr2bdd, And, Or, expr
-from helpers import node_expr, evaluate_relation
+from helpers import node_expr, evaluate_relation, evaluate_unary
 
 NUM_BITS = 5
 
@@ -28,3 +28,20 @@ RR = expr2bdd(R_expr)
 # Test cases for R.
 print("RR(27, 3) =", evaluate_relation(RR, 27, 3, u, v))
 print("RR(16, 20) =", evaluate_relation(RR, 16, 20, u, v))
+
+# -------------------------------
+# 2. Build BDDs for even and prime sets.
+# -------------------------------
+even_nodes = [node_expr(i, v) for i in range(32) if i % 2 == 0]
+EVEN_expr = Or(*even_nodes)
+EVEN = expr2bdd(EVEN_expr)
+
+prime_set = {3, 5, 7, 11, 13, 17, 19, 23, 29, 31}
+prime_nodes = [node_expr(p, u) for p in prime_set]
+PRIME_expr = Or(*prime_nodes)
+PRIME = expr2bdd(PRIME_expr)
+
+print("EVEN(14) =", evaluate_unary(EVEN, 14, v))
+print("EVEN(13) =", evaluate_unary(EVEN, 13, v))
+print("PRIME(7) =", evaluate_unary(PRIME, 7, u))
+print("PRIME(2) =", evaluate_unary(PRIME, 2, u))
