@@ -28,3 +28,34 @@ def evaluate_unary(bdd, node, varlist):
     expr_form = bdd2expr(bdd)
     result_expr = expr_form.restrict(assignment)
     return result_expr.is_one()
+
+def bdd_compose(bdd, subst):
+    """
+    Converts a BDD to an expression, performs composition using the provided substitution,
+    and converts the result back to a BDD.
+    """
+    if bdd.is_zero():
+        return bdd
+    expr_form = bdd2expr(bdd)
+    composed_expr = expr_form.compose(subst)
+    return expr2bdd(composed_expr)
+
+def bdd_smoothing(bdd, var_list):
+    """
+    Converts a BDD to an expression, performs smoothing
+    on the specified variables, and converts back to a BDD.
+    If smoothing returns None or yields an unsuitable expression, the original BDD is returned.
+    """
+    if bdd.is_zero():
+        return bdd
+    expr_form = bdd2expr(bdd)
+    # If no variable from var_list appears in the support or the expression is constant, return bdd.
+    if expr_form in [True, False] or not any(var in expr_form.support for var in var_list):
+        return bdd
+    smoothed_expr = expr_form.smoothing(var_list)
+    if smoothed_expr is None:
+        return bdd
+    if isinstance(smoothed_expr, bool):
+        return expr2bdd(expr(1)) if smoothed_expr else expr2bdd(expr(0))
+    wrapped_expr = expr(smoothed_expr).simplify()
+    return expr2bdd(wrapped_expr)

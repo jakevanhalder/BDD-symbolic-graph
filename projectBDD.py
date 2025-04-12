@@ -5,7 +5,7 @@ This program verifies StatementA:
     in a positive even number of steps.
 """
 from pyeda.inter import exprvars, expr2bdd, And, Or, expr
-from helpers import node_expr, evaluate_relation, evaluate_unary
+from helpers import node_expr, evaluate_relation, evaluate_unary, bdd_compose, bdd_smoothing
 
 NUM_BITS = 5
 
@@ -45,3 +45,15 @@ print("EVEN(14) =", evaluate_unary(EVEN, 14, v))
 print("EVEN(13) =", evaluate_unary(EVEN, 13, v))
 print("PRIME(7) =", evaluate_unary(PRIME, 7, u))
 print("PRIME(2) =", evaluate_unary(PRIME, 2, u))
+
+# -------------------------------
+# 3. Compute 2-step relation RR2.
+# -------------------------------
+x = exprvars('x', NUM_BITS)
+R_ux = bdd_compose(RR, {v[i]: x[i] for i in range(NUM_BITS)})
+R_xv = bdd_compose(RR, {u[i]: x[i] for i in range(NUM_BITS)})
+RR2_temp = R_ux & R_xv
+RR2 = bdd_smoothing(RR2_temp, list(x))
+
+print("RR2(27, 6) =", evaluate_relation(RR2, 27, 6, u, v))
+print("RR2(27, 9) =", evaluate_relation(RR2, 27, 9, u, v))
