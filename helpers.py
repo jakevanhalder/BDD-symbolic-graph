@@ -59,3 +59,20 @@ def bdd_smoothing(bdd, var_list):
         return expr2bdd(expr(1)) if smoothed_expr else expr2bdd(expr(0))
     wrapped_expr = expr(smoothed_expr).simplify()
     return expr2bdd(wrapped_expr)
+
+def compose_relation(rel, u_vars, v_vars, x_vars):
+    """Compose a relation with itself to form a two-step relation."""
+    rel_ux = bdd_compose(rel, {v_vars[i]: x_vars[i] for i in range(len(x_vars))})
+    rel_xv = bdd_compose(rel, {u_vars[i]: x_vars[i] for i in range(len(x_vars))})
+    return bdd_smoothing(rel_ux & rel_xv, list(x_vars))
+
+def transitive_closure(rel, u_vars, v_vars, x_vars):
+    """Compute the transitive closure of a relation using iterative composition."""
+    T = rel
+    while True:
+        composed = compose_relation(T, u_vars, v_vars, x_vars)
+        newT = T | composed
+        if newT.equivalent(T):
+            break
+        T = newT
+    return T

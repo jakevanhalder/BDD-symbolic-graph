@@ -5,7 +5,7 @@ This program verifies StatementA:
     in a positive even number of steps.
 """
 from pyeda.inter import exprvars, expr2bdd, And, Or, expr
-from helpers import node_expr, evaluate_relation, evaluate_unary, bdd_compose, bdd_smoothing
+from helpers import node_expr, evaluate_relation, evaluate_unary, bdd_compose, bdd_smoothing, transitive_closure
 
 NUM_BITS = 5
 
@@ -57,3 +57,21 @@ RR2 = bdd_smoothing(RR2_temp, list(x))
 
 print("RR2(27, 6) =", evaluate_relation(RR2, 27, 6, u, v))
 print("RR2(27, 9) =", evaluate_relation(RR2, 27, 9, u, v))
+
+# -------------------------------
+# 4. Compute transitive closure RR2⋆ for even-length paths.
+# -------------------------------
+
+y = exprvars('y', NUM_BITS)
+RR2star = transitive_closure(RR2, u, v, y)
+
+# -------------------------------
+# 5. Verify StatementA.
+# StatementA: For every prime node u there exists an even node v such that u can reach v
+# in a positive even number of steps.
+# -------------------------------
+RR2star_and_EVEN = RR2star & EVEN
+reachable_even = bdd_smoothing(RR2star_and_EVEN, list(v))
+statement_expr = (~PRIME) | reachable_even
+statement_value = bdd_smoothing(statement_expr, list(u))
+print("StatementA holds:", statement_value)
